@@ -58,7 +58,7 @@ const startPage = async () => {
     // let crawlElements = await page.$("123");
     // await delay();
     // await login();
-    await delay(30000);
+    await delay(120000);
     await findAndRemoveElement();
   } catch (err) {
     console.log(err);
