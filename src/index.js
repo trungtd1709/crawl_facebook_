@@ -59,6 +59,12 @@ const startPage = async () => {
     // await delay();
     // await login();
     await delay(40000);
+    await page.evaluate(() => {
+      const elements = document.querySelectorAll('[aria-label="Facebook"]');
+      elements.forEach((element) => {
+        element.parentNode.removeChild(element);
+      });
+    });
     await findAndRemoveElement();
   } catch (err) {
     console.log(err);
@@ -103,13 +109,6 @@ const findAndRemoveElement = async () => {
   page.on("console", (msg) => console.log("[PAGE LOG]:", msg.text()));
   let continueScraping = true;
   console.log("[findAndRemoveElement]");
-
-  await page.evaluate(() => {
-    const elements = document.querySelectorAll('[aria-label="Facebook"]');
-    elements.forEach((element) => {
-      element.parentNode.removeChild(element);
-    });
-  });
 
   const crawlElementsSelector = ".x1yztbdb.x1n2onr6.xh8yej3.x1ja2u2z";
   let crawlElements = await page.$$(crawlElementsSelector);
