@@ -184,7 +184,7 @@ const findAndRemoveElement = async () => {
               }
             }
           }
-          await delay(1000);
+          await delay(3000);
           await clickSeeMore(modal);
           innerText = removeUnnecessaryStrPath(
             await page.evaluate((element) => element.innerText, modal)
@@ -236,7 +236,7 @@ const findAndRemoveElement = async () => {
       })
     );
 
-    await delay();
+    await delay(6);
     crawlElements = await page.$$(crawlElementsSelector);
     crawlElementsLength += crawlElements.length;
     console.log("[postindex]: ", postIndex);
