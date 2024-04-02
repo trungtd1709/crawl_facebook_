@@ -59,11 +59,13 @@ const startPage = async () => {
     // await delay();
     // await login();
     await delay(40000);
-    await page.evaluate(() => {
+    await page.evaluate(async () => {
       const elements = document.querySelectorAll('[aria-label="Facebook"]');
-      elements.forEach((element) => {
-        element.parentNode.removeChild(element);
-      });
+      await Promise.all(
+        elements.map(async (element) => {
+          await element.parentNode.removeChild(element);
+        })
+      );
     });
     await findAndRemoveElement();
   } catch (err) {
@@ -177,7 +179,10 @@ const findAndRemoveElement = async () => {
               spanModalText === "View 1 reply"
             ) {
               if (modal && spanModal) {
-                await spanModal.evaluate((el) => el.scrollIntoView(), spanModal);
+                await spanModal.evaluate(
+                  (el) => el.scrollIntoView(),
+                  spanModal
+                );
                 await spanModal.click();
                 // break;
               }
