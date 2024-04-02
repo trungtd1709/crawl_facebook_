@@ -49,7 +49,7 @@ const startPage = async () => {
     await page.goto(crawlUrl, { waitUntil: "load" });
     await page.setViewport({ width: 1080, height: 1024 });
     await createFolder();
-    await cleanFile();
+    // await cleanFile();
     // await closeModal();
     // await login();
 
@@ -58,7 +58,7 @@ const startPage = async () => {
     // let crawlElements = await page.$("123");
     // await delay();
     // await login();
-    await delay(120000);
+    await delay(40000);
     await findAndRemoveElement();
   } catch (err) {
     console.log(err);

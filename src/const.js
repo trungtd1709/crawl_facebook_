@@ -26,4 +26,5 @@ export const replyImgSelector = ".xz74otr";
 
 export const seeMoreSelector = ".x1i10hfl.xjbqb8w.x1ejq31n.xd10rxx.x1sy0etr.x17r0tee.x972fbf.xcfux6l.x1qhh985.xm0m39n.x9f619"
 
-export const spanClickSelector = ".x193iq5w.xeuugli.x13faqbe.x1vvkbs.xlh3980";
+// export const spanClickSelector = ".x193iq5w.xeuugli.x13faqbe.x1vvkbs.xlh3980";
+export const spanClickSelector = ".x193iq5w.xeuugli.x13faqbe.x1vvkbs";
