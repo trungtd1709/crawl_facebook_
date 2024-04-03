@@ -51,7 +51,6 @@ const startPage = async () => {
     await createFolder();
     // await cleanFile();
     // await closeModal();
-    // await login();
 
     // await autoScroll();
     // await page.waitForNavigation();
@@ -59,7 +58,6 @@ const startPage = async () => {
     // await delay();
     // await login();
     await delay(40000);
-    
     await findAndRemoveElement();
   } catch (err) {
     console.log(err);
@@ -79,13 +77,40 @@ const closeModal = async () => {
 };
 
 const login = async () => {
-  await delay();
+  await delay(5000);
+  console.log("[Start login]");
 
-  await page.waitForSelector(emailFieldID);
-  await page.type(emailFieldID, username);
+  // await page.waitForSelector(emailFieldID);
 
-  await page.waitForSelector(passwordFieldID);
-  await page.type(passwordFieldID, password);
+  const usenameInput1 = await page.$$("#\\:rn\\:");
+  if (usenameInput1.length > 0) {
+    await page.type("#\\:rn\\:", username);
+  }
+
+  const usenameInput2 = await page.$$("#\\:r4\\:");
+
+  if (usenameInput2.length > 0) {
+    await page.type("#\\:r4\\:", username);
+  }
+
+  const passwordInput1 = await page.$$("#\\:rq\\:");
+  if (passwordInput1.length > 0) {
+    await page.type("#\\:rn\\:", password);
+  }
+
+  const passwordInput2 = await page.$$("#\\:r7\\:");
+
+  if (passwordInput2.length > 0) {
+    await page.type("#\\:r4\\:", password);
+  }
+
+  await delay(10000);
+
+  // const usernameInput = page.$$(emailFieldID)
+  // await page.type(emailFieldID, username);
+
+  // await page.waitForSelector(passwordFieldID);
+  // await page.type(passwordFieldID, password);
 
   // await page.type(emailFieldID, username);
   // await page.type(passwordFieldID, password);
@@ -94,7 +119,13 @@ const login = async () => {
   if (loginButton) {
     console.log("Found the login button");
     // For example, to click the button:
-    await loginButton.click();
+    try {
+      // await loginButton.click();
+      await page.evaluate((el) => el.click(), loginButton);
+      console.log("click success");
+    } catch (err) {
+      console.log(err);
+    }
   } else {
     console.log("Login button not found");
   }
@@ -103,14 +134,14 @@ const login = async () => {
 const findAndRemoveElement = async () => {
   page.on("console", (msg) => console.log("[PAGE LOG]:", msg.text()));
   console.log("[findAndRemoveElement]");
-  await page.evaluate(async () => {
+
+  await page.evaluate(() => {
     const elements = document.querySelectorAll('[aria-label="Facebook"]');
-    await Promise.all(
-      elements.map(async (element) => {
-        await element.parentNode.removeChild(element);
-      })
-    );
+    elements.forEach((element) => {
+      element.parentNode.removeChild(element);
+    });
   });
+
   const crawlElementsSelector = ".x1yztbdb.x1n2onr6.xh8yej3.x1ja2u2z";
   let crawlElements = await page.$$(crawlElementsSelector);
   let crawlElementsLength = 1;
@@ -118,14 +149,8 @@ const findAndRemoveElement = async () => {
 
   while (true) {
     outerLoop: for await (let parentEl of crawlElements) {
-      // if (postIndex == 163 || postIndex == 381) {
-      //   postIndex++;
-      //   continue outerLoop;
-      // }
-      const spanSelector = "span";
       await parentEl.evaluate((el) => el.scrollIntoView(), parentEl);
       const spans = await parentEl.$$(spanClickSelector);
-      // console.log("[spans.length]:", spans.length);
       let innerText = "";
       let imgUrl = [];
       for await (let span of spans) {
@@ -142,9 +167,14 @@ const findAndRemoveElement = async () => {
               return !!link;
             });
             if (!elementContainsLink) {
-              await span.click();
-              await delay(1000);
-              break;
+              try {
+                await span.click();
+                await delay(1000);
+                break;
+              } catch (error) {
+                console.error("Click failed", error);
+                continue;
+              }
             }
           }
         }
@@ -200,7 +230,7 @@ const findAndRemoveElement = async () => {
           );
 
           await getImgUrl(modal, postIndex);
-          console.log("[innerText]:", innerText);
+          // console.log("[innerText]:", innerText);
           await closeModal();
           postIndex++;
           // await page.evaluate((el) => el.remove(), parentEl);
@@ -221,12 +251,9 @@ const findAndRemoveElement = async () => {
         `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
       );
       await getImgUrl(parentEl, postIndex);
-      console.log("[innerText]:", innerText);
+      // console.log("[innerText]:", innerText);
 
       postIndex++;
-      if (postIndex % 50 === 0) {
-        await delay(10000);
-      }
       // await page.evaluate((el) => el.remove(), parentEl);
     }
 
@@ -239,11 +266,11 @@ const findAndRemoveElement = async () => {
       })
     );
 
-    await delay(6);
+    await delay(5000);
     crawlElements = await page.$$(crawlElementsSelector);
     crawlElementsLength += crawlElements.length;
     console.log("[postindex]: ", postIndex);
-    console.log("[crawlElementsLength]: ", crawlElementsLength);
+    // console.log("[crawlElementsLength]: ", crawlElementsLength);
 
     // console.log("[crawlElements.length]:", crawlElements.length);
     // if (crawlElements.length === 0) {
