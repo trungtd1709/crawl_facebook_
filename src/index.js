@@ -2,8 +2,10 @@ import dotenv from "dotenv";
 import express from "express";
 import puppeteer from "puppeteer";
 import {
+  btnLoginSelector,
   crawlUrl,
   emailFieldID,
+  fbUrl,
   loginButtonSelector,
   mainDivClassName,
   modalSelector,
@@ -46,7 +48,7 @@ function delay(time = 3000) {
 const startPage = async () => {
   console.log("Start page");
   try {
-    await page.goto(crawlUrl, { waitUntil: "load" });
+    await page.goto(fbUrl, { waitUntil: "load" });
     await page.setViewport({ width: 1080, height: 1024 });
     await createFolder();
     // await cleanFile();
@@ -56,8 +58,9 @@ const startPage = async () => {
     // await page.waitForNavigation();
     // let crawlElements = await page.$("123");
     // await delay();
-    // await login();
+    await login();
     await delay(40000);
+    await page.goto(crawlUrl, { waitUntil: "load" });
     await findAndRemoveElement();
   } catch (err) {
     console.log(err);
@@ -82,27 +85,27 @@ const login = async () => {
 
   // await page.waitForSelector(emailFieldID);
 
-  const usenameInput1 = await page.$$("#\\:rn\\:");
+  const usenameInput1 = await page.$$("#email");
   if (usenameInput1.length > 0) {
-    await page.type("#\\:rn\\:", username);
+    await page.type("#email", username);
   }
 
-  const usenameInput2 = await page.$$("#\\:r4\\:");
+  // const usenameInput2 = await page.$$("#\\:r4\\:");
 
-  if (usenameInput2.length > 0) {
-    await page.type("#\\:r4\\:", username);
-  }
+  // if (usenameInput2.length > 0) {
+  //   await page.type("#\\:r4\\:", username);
+  // }
 
-  const passwordInput1 = await page.$$("#\\:rq\\:");
+  const passwordInput1 = await page.$$("#pass");
   if (passwordInput1.length > 0) {
-    await page.type("#\\:rn\\:", password);
+    await page.type("#pass", password);
   }
 
-  const passwordInput2 = await page.$$("#\\:r7\\:");
+  // const passwordInput2 = await page.$$("#\\:r7\\:");
 
-  if (passwordInput2.length > 0) {
-    await page.type("#\\:r4\\:", password);
-  }
+  // if (passwordInput2.length > 0) {
+  //   await page.type("#\\:r4\\:", password);
+  // }
 
   await delay(10000);
 
@@ -115,13 +118,15 @@ const login = async () => {
   // await page.type(emailFieldID, username);
   // await page.type(passwordFieldID, password);
   // await delay();
-  const loginButton = await page.$(loginButtonSelector);
-  if (loginButton) {
+  // const loginButton = await page.$(loginButtonSelector);
+  const btnLogin = await page.$(btnLoginSelector);
+  if (btnLogin) {
     console.log("Found the login button");
     // For example, to click the button:
     try {
       // await loginButton.click();
-      await page.evaluate((el) => el.click(), loginButton);
+      await page.evaluate((el) => el.click(), btnLogin);
+      // await page.goto(crawlUrl,{ waitUntil: "load" })
       console.log("click success");
     } catch (err) {
       console.log(err);

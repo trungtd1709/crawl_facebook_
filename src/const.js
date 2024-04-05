@@ -1,5 +1,6 @@
 // export const username = "tqmmqt3@gmail.com"
 // export const password = "Minh2001"
+export const fbUrl = "https://www.facebook.com/"
 export const crawlUrl = "https://www.facebook.com/groups/duhocsinhnuocuc/";
 // https://www.facebook.com/groups/duhocsinhnuocuc/announcements
 // export const emailFieldID = "#email";
@@ -9,6 +10,7 @@ export const crawlUrl = "https://www.facebook.com/groups/duhocsinhnuocuc/";
 export const emailFieldID ='#\\:rn\\:';
 export const passwordFieldID = '#\\:rq\\:';
 export const loginButtonSelector = '[aria-label="Accessible login button"]';
+export const btnLoginSelector = '._51sy'
 
 export const testCrawlUrl = "https://vnexpress.net/";
 
@@ -17,8 +19,8 @@ export const mainDivClassName = ".x1yztbdb.x1n2onr6.xh8yej3.x1ja2u2z";
 // export const username = "tan.pn194371@sis.hust.edu.vn";
 // export const password = "Phamngoctan2001";
 
-export const username = "123";
-export const password = "123";
+export const username = "0978252102";
+export const password = "kiendao2001";
 
 export const modalSelector =
   ".x78zum5.xdt5ytf.x1iyjqo2.x1n2onr6.x1jxyteu.x1mfppf3.xqbnct6.xga75y6";
