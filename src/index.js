@@ -525,7 +525,8 @@ const clickSeeMore = async (parentEl) => {
       });
       if (!elementContainsLink) {
         try {
-          await div.click();
+          // await div.click();
+          await parentEl.evaluate((el) => el.click(), div);
           // await parentEl.evaluate((el) => el.click(), div);
         } catch (error) {
           await parentEl.evaluate((el) => el.click(), div);
