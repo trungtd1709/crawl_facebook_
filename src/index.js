@@ -147,8 +147,15 @@ const findAndRemoveElement = async () => {
             //   }
             // );
             if (!elementContainsLink) {
-              await span.click();
-              await delay(1000);
+              try {
+                await span.click();
+                await delay(1000);
+                spans = null;
+                break;
+              } catch (error) {
+                console.error("Click failed", error);
+                continue;
+              }
             }
           }
           let modalFound = true;
