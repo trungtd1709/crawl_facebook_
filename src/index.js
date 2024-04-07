@@ -227,7 +227,7 @@ const findAndRemoveElement = async () => {
               spanModalText === "View 1 reply"
             ) {
               if (modal && spanModal) {
-                await spanModal.evaluate(
+                await page.evaluate(
                   (el) => el.scrollIntoView(),
                   spanModal
                 );
