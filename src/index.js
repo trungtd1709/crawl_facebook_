@@ -64,8 +64,8 @@ const startPage = async () => {
     // await page.goto(crawlUrl, { waitUntil: "load" });
     // await page.setViewport({ width: 1080, height: 1024 });
     await createFolder();
-    // await cleanFile();
-    await closeModal();
+    await cleanFile();
+    // await closeModal();
 
     // await autoScroll();
     // await page.waitForNavigation();
