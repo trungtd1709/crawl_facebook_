@@ -50,13 +50,13 @@ const startPage = async () => {
     await page.setViewport({ width: 1080, height: 1024 });
     await createFolder();
     await cleanFile();
-    await closeModal();
+    // await closeModal();
     // await login();
 
     // await autoScroll();
     // await page.waitForNavigation();
     // let crawlElements = await page.$("123");
-    // await delay();
+    await delay();
     // await login();
     await delay(30000);
     await findAndRemoveElement();
@@ -116,7 +116,7 @@ const findAndRemoveElement = async () => {
   let postIndex = 1;
 
   while (true) {
-    outerLoop: for await (let parentEl of crawlElements) {
+    outerLoop: for (let parentEl of crawlElements) {
       // if (postIndex == 163 || postIndex == 381) {
       //   postIndex++;
       //   continue outerLoop;
@@ -126,7 +126,7 @@ const findAndRemoveElement = async () => {
       // console.log("[spans.length]:", spans.length);
       let innerText = "";
       let imgUrl = [];
-      for await (let span of spans) {
+      for (let span of spans) {
         const text = await span.evaluate((span) => span.innerText, span);
         if (
           text === "View more answers" ||
@@ -149,63 +149,56 @@ const findAndRemoveElement = async () => {
             if (!elementContainsLink) {
               await span.click();
               await delay(1000);
-              break;
             }
           }
-        }
-      }
-      let modalFound = true;
+          let modalFound = true;
 
-      await page
-        .waitForSelector(modalSelector, { timeout: 5000 })
-        .catch((e) => {
-          console.log("Modal not found or did not appear within 5 seconds");
-          modalFound = false;
-        });
-      if (modalFound) {
-        const modal = await page.$(modalSelector);
-        if (modal) {
-          const spansModal = await modal.$$eval(spanClickSelector, (el) => {
-            return el[0].tagName.toLowerCase() === "span";
-          });
+          await page
+            .waitForSelector(modalSelector, { timeout: 5000 })
+            .catch((e) => {
+              console.log("Modal not found or did not appear within 5 seconds");
+              modalFound = false;
+            });
+          if (modalFound) {
+            const modal = await page.$(modalSelector);
+            if (modal) {
+              const spansModal = await modal.$$eval(spanClickSelector, (el) => {
+                return el[0].tagName.toLowerCase() === "span";
+              });
 
-          for (let i = 0; i < spansModal.length; i++) {
-            const spanModal = spansModal[i];
-            const spanModalText = await page.evaluate(
-              (span) => span.innerText,
-              spanModal
-            );
-            if (
-              spanModalText === "View more answers" ||
-              spanModalText === "View more comments" ||
-              checkStringViewAll(spanModalText) ||
-              spanModalText === "View 1 reply"
-            ) {
-              if (modal && spanModal) {
-                await spanModal.evaluate(
-                  (el) => el.scrollIntoView(),
+              for (let i = 0; i < spansModal.length; i++) {
+                const spanModal = spansModal[i];
+                const spanModalText = await page.evaluate(
+                  (span) => span.innerText,
                   spanModal
                 );
-                // await spanModal.click();
-                await modal.evaluate((el) => el.click(), spanModal);
-                // break;
+                if (
+                  spanModalText === "View more answers" ||
+                  spanModalText === "View more comments" ||
+                  checkStringViewAll(spanModalText) ||
+                  spanModalText === "View 1 reply"
+                ) {
+                  if (modal && spanModal) {
+                    await spanModal.click();
+                    break;
+                  }
+                }
               }
+              await delay(1000);
+              await clickSeeMore(modal);
+              innerText = removeUnnecessaryStrPath(
+                await page.evaluate((element) => element.innerText, modal)
+              );
+              await writeToFile(
+                `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
+              );
+                await getImgUrl(modal, postIndex);
+              await closeModal();
+              postIndex++;
+              // await page.evaluate((el) => el.remove(), parentEl);
+              continue outerLoop;
             }
           }
-          await delay(1000);
-          await clickSeeMore(modal);
-          innerText = removeUnnecessaryStrPath(
-            await page.evaluate((element) => element.innerText, modal)
-          );
-          await writeToFile(
-            `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
-          );
-          await getImgUrl(modal, postIndex);
-
-          await closeModal();
-          postIndex++;
-          // await page.evaluate((el) => el.remove(), parentEl);
-          continue outerLoop;
         }
       }
 
@@ -224,10 +217,10 @@ const findAndRemoveElement = async () => {
       innerText = removeUnnecessaryStrPath(
         await page.evaluate((element) => element.innerText, parentEl)
       );
-      await getImgUrl(parentEl, postIndex);
       await writeToFile(
         `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
       );
+      await getImgUrl(parentEl, postIndex);
       ``;
       postIndex++;
       if (postIndex % 50 === 0) {
@@ -238,14 +231,13 @@ const findAndRemoveElement = async () => {
 
     // Re-query the elements to see if more work is needed
     // await delay();
-
-    await Promise.all(
-      crawlElements.map(async (parentEl) => {
-        await page.evaluate((el) => el.remove(), parentEl);
-      })
-    );
+    
+    crawlElements.map(async (parentEl) => {
+      await page.evaluate((el) => el.remove(), parentEl);
+    })
     await delay();
     crawlElements = await page.$$(crawlElementsSelector);
+
 
     // console.log("[crawlElements.length]:", crawlElements.length);
     // if (crawlElements.length === 0) {
