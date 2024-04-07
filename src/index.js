@@ -232,7 +232,7 @@ const findAndRemoveElement = async () => {
                   spanModal
                 );
                 // await spanModal.click();
-                await modal.evaluate((el) => el.click(), spanModal);
+                await page.evaluate((el) => el.click(), spanModal);
                 // break;
               }
             }
