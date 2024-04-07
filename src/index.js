@@ -181,8 +181,13 @@ const findAndRemoveElement = async () => {
               spanModalText === "View 1 reply"
             ) {
               if (modal && spanModal) {
-                await spanModal.click();
-                break;
+                await spanModal.evaluate(
+                  (el) => el.scrollIntoView(),
+                  spanModal
+                );
+                // await spanModal.click();
+                await modal.evaluate((el) => el.click(), spanModal);
+                // break;
               }
             }
           }
@@ -433,7 +438,7 @@ const createFolder = (postIndex) => {
 const clickSeeMore = async (parentEl) => {
   const seeMoreDivs = await page.$$(seeMoreSelector);
   for await (const div of seeMoreDivs) {
-    const isSeeMore = await parentEl.evaluate(
+    const isSeeMore = await div.evaluate(
       // (el) => el.textContent.trim() === "See more",
       (el) => el.textContent === "See more",
       div
