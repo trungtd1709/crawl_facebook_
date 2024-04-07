@@ -65,7 +65,7 @@ const startPage = async () => {
     // await page.setViewport({ width: 1080, height: 1024 });
     await createFolder();
     // await cleanFile();
-    // await closeModal();
+    await closeModal();
 
     // await autoScroll();
     // await page.waitForNavigation();
@@ -188,7 +188,7 @@ const findAndRemoveElement = async () => {
               try {
                 await span.click();
                 await delay(1000);
-                spans = null;
+                // spans = null;
                 break;
               } catch (error) {
                 console.error("Click failed", error);
@@ -254,8 +254,8 @@ const findAndRemoveElement = async () => {
           await closeModal();
           postIndex++;
           // await page.evaluate((el) => el.remove(), parentEl);
-          modal = null;
-          spansModal = null;
+          // modal = null;
+          // spansModal = null;
           continue outerLoop;
         }
       }
@@ -510,14 +510,14 @@ const createFolder = (postIndex) => {
 const clickSeeMore = async (parentEl) => {
   let seeMoreDivs = await parentEl.$$(seeMoreSelector);
   for await (const div of seeMoreDivs) {
-    const isSeeMore = await parentEl.evaluate(
+    const isSeeMore = await div.evaluate(
       // (el) => el.textContent.trim() === "See more",
       (el) => el.textContent === "See more",
       div
     );
     if (isSeeMore) {
       // Scroll the div into view
-      await parentEl.evaluate((el) => el.scrollIntoView(), div);
+      await div.evaluate((el) => el.scrollIntoView(), div);
       // await delay(500);
       const elementContainsLink = await div.evaluate((element) => {
         const link = element.querySelector("a[href]");
@@ -526,7 +526,7 @@ const clickSeeMore = async (parentEl) => {
       if (!elementContainsLink) {
         try {
           // await div.click();
-          await parentEl.evaluate((el) => el.click(), div);
+          await div.evaluate((el) => el.click(), div);
           // await parentEl.evaluate((el) => el.click(), div);
         } catch (error) {
           await parentEl.evaluate((el) => el.click(), div);
@@ -534,7 +534,7 @@ const clickSeeMore = async (parentEl) => {
       }
     }
   }
-  seeMoreDivs = null;
+  // seeMoreDivs = null;
   await delay(1000);
 };
 function checkStringViewAll(str) {
