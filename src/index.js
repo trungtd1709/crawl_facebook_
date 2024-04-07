@@ -189,16 +189,11 @@ const findAndRemoveElement = async () => {
               innerText = removeUnnecessaryStrPath(
                 await page.evaluate((element) => element.innerText, modal)
               );
-              await writeToFile(`[Post Index]: ${postIndex}`);
               await writeToFile(
-                `----------------- Start Post --------------- \n`
+                `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
               );
               await getImgUrl(modal, postIndex);
-              console.log("[innerText]:", innerText);
-              await writeToFile(`[Post content]: ${innerText} \n`);
-              await writeToFile(
-                `----------------- End Post --------------- \n`
-              );
+              
               await closeModal();
               postIndex++;
               // await page.evaluate((el) => el.remove(), parentEl);
@@ -223,12 +218,10 @@ const findAndRemoveElement = async () => {
       innerText = removeUnnecessaryStrPath(
         await page.evaluate((element) => element.innerText, parentEl)
       );
-      await writeToFile(`[Post Index]: ${postIndex}`);
-      await writeToFile(`----------------- Start Post --------------- \n`);
       await getImgUrl(parentEl, postIndex);
-      console.log("[innerText]:", innerText);
-      await writeToFile(`[Post content]: ${innerText}`);
-      await writeToFile(`----------------- End Post --------------- \n`);
+      await writeToFile(
+        `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
+      );
       ``;
       postIndex++;
       if (postIndex % 50 === 0) {
