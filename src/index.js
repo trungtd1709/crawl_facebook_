@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import express from "express";
+import puppeteer from "puppeteer";
 import {
   crawlUrl,
   emailFieldID,
@@ -16,34 +17,18 @@ import {
 } from "./const.js";
 import fs from "fs";
 import https from "https";
-import { spawn } from 'child_process';
-import { createPage } from "./page.js";
 dotenv.config();
 
 const filename = "result.txt";
 const imagesFolderPath = "./images";
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3030;
 
-// const browser = await puppeteer.launch({
-//   headless: false,
-//   defaultViewport: null,
-//   // args: ["--single-process"],
-// });
-// const page = await browser.newPage();
-
-// await page.setCacheEnabled(false);
-// // page.
-// await page.setRequestInterception(true);
-// page.on("request", (req) => {
-//   if (["image", "font"].includes(req.resourceType())) {
-//     req.abort();
-//   } else {
-//     req.continue();
-//   }
-// });
-
-const page = await createPage();
+const browser = await puppeteer.launch({
+  headless: false,
+  defaultViewport: null,
+});
+const page = await browser.newPage();
 
 app.get("/", (req, res) => {
   findAndRemoveElement();
@@ -61,18 +46,19 @@ function delay(time = 3000) {
 const startPage = async () => {
   console.log("Start page");
   try {
-    // await page.goto(crawlUrl, { waitUntil: "load" });
-    // await page.setViewport({ width: 1080, height: 1024 });
+    await page.goto(crawlUrl, { waitUntil: "load" });
+    await page.setViewport({ width: 1080, height: 1024 });
     await createFolder();
-    // await cleanFile();
+    await cleanFile();
     // await closeModal();
+    // await login();
 
     // await autoScroll();
     // await page.waitForNavigation();
     // let crawlElements = await page.$("123");
-    // await delay();
+    await delay();
     // await login();
-    await delay(40000);
+    await delay(30000);
     await findAndRemoveElement();
   } catch (err) {
     console.log(err);
@@ -92,40 +78,13 @@ const closeModal = async () => {
 };
 
 const login = async () => {
-  await delay(5000);
-  console.log("[Start login]");
+  await delay();
 
-  // await page.waitForSelector(emailFieldID);
+  await page.waitForSelector(emailFieldID);
+  await page.type(emailFieldID, username);
 
-  const usenameInput1 = await page.$$("#\\:rn\\:");
-  if (usenameInput1.length > 0) {
-    await page.type("#\\:rn\\:", username);
-  }
-
-  const usenameInput2 = await page.$$("#\\:r4\\:");
-
-  if (usenameInput2.length > 0) {
-    await page.type("#\\:r4\\:", username);
-  }
-
-  const passwordInput1 = await page.$$("#\\:rq\\:");
-  if (passwordInput1.length > 0) {
-    await page.type("#\\:rn\\:", password);
-  }
-
-  const passwordInput2 = await page.$$("#\\:r7\\:");
-
-  if (passwordInput2.length > 0) {
-    await page.type("#\\:r4\\:", password);
-  }
-
-  await delay(10000);
-
-  // const usernameInput = page.$$(emailFieldID)
-  // await page.type(emailFieldID, username);
-
-  // await page.waitForSelector(passwordFieldID);
-  // await page.type(passwordFieldID, password);
+  await page.waitForSelector(passwordFieldID);
+  await page.type(passwordFieldID, password);
 
   // await page.type(emailFieldID, username);
   // await page.type(passwordFieldID, password);
@@ -134,13 +93,7 @@ const login = async () => {
   if (loginButton) {
     console.log("Found the login button");
     // For example, to click the button:
-    try {
-      // await loginButton.click();
-      await page.evaluate((el) => el.click(), loginButton);
-      console.log("click success");
-    } catch (err) {
-      console.log(err);
-    }
+    await loginButton.click();
   } else {
     console.log("Login button not found");
   }
@@ -148,6 +101,7 @@ const login = async () => {
 
 const findAndRemoveElement = async () => {
   page.on("console", (msg) => console.log("[PAGE LOG]:", msg.text()));
+  let continueScraping = true;
   console.log("[findAndRemoveElement]");
 
   await page.evaluate(() => {
@@ -159,19 +113,20 @@ const findAndRemoveElement = async () => {
 
   const crawlElementsSelector = ".x1yztbdb.x1n2onr6.xh8yej3.x1ja2u2z";
   let crawlElements = await page.$$(crawlElementsSelector);
-  let crawlElementsLength = 1;
   let postIndex = 1;
 
   while (true) {
-    // const context = browser.defaultBrowserContext();
-    // await context.clearPermissionOverrides();
-    // await context.clearCache();
-    outerLoop: for await (let parentEl of crawlElements) {
-      await parentEl.evaluate((el) => el.scrollIntoView(), parentEl);
-      let spans = await parentEl.$$(spanClickSelector);
+    outerLoop: for (let parentEl of crawlElements) {
+      // if (postIndex == 163 || postIndex == 381) {
+      //   postIndex++;
+      //   continue outerLoop;
+      // }
+      const spanSelector = "span";
+      const spans = await parentEl.$$(spanClickSelector);
+      // console.log("[spans.length]:", spans.length);
       let innerText = "";
       let imgUrl = [];
-      for await (let span of spans) {
+      for (let span of spans) {
         const text = await span.evaluate((span) => span.innerText, span);
         if (
           text === "View more answers" ||
@@ -184,111 +139,118 @@ const findAndRemoveElement = async () => {
               const link = element.querySelector("a[href]");
               return !!link;
             });
+            // const elementContainsLink = await span.$eval(
+            //   selector,
+            //   (element) => {
+            //     const link = element.querySelector("a[href]");
+            //     return !!link;
+            //   }
+            // );
             if (!elementContainsLink) {
-              try {
-                await span.click();
-                await delay(1000);
-                spans = null;
-                break;
-              } catch (error) {
-                console.error("Click failed", error);
-                continue;
-              }
+              await span.click();
+              await delay(1000);
             }
           }
-        }
-      }
+          let modalFound = true;
 
-      let modalFound = true;
+          await page
+            .waitForSelector(modalSelector, { timeout: 5000 })
+            .catch((e) => {
+              console.log("Modal not found or did not appear within 5 seconds");
+              modalFound = false;
+            });
+          if (modalFound) {
+            const modal = await page.$(modalSelector);
+            if (modal) {
+              const spansModal = await modal.$$eval(spanClickSelector, (el) => {
+                return el[0].tagName.toLowerCase() === "span";
+              });
 
-      await page
-        .waitForSelector(modalSelector, { timeout: 5000 })
-        .catch((e) => {
-          console.log("Modal not found or did not appear within 5 seconds");
-          modalFound = false;
-        });
-      if (modalFound) {
-        let modal = await page.$(modalSelector);
-        if (modal) {
-          let spansModal = await modal.$$eval(spanClickSelector, (el) => {
-            return el[0].tagName.toLowerCase() === "span";
-          });
-
-          for (let i = 0; i < spansModal.length; i++) {
-            const spanModal = spansModal[i];
-            const spanModalText = await page.evaluate(
-              (span) => span.innerText,
-              spanModal
-            );
-            if (
-              spanModalText === "View more answers" ||
-              spanModalText === "View more comments" ||
-              checkStringViewAll(spanModalText) ||
-              spanModalText === "View 1 reply"
-            ) {
-              if (modal && spanModal) {
-                await spanModal.evaluate(
-                  (el) => el.scrollIntoView(),
+              for (let i = 0; i < spansModal.length; i++) {
+                const spanModal = spansModal[i];
+                const spanModalText = await page.evaluate(
+                  (span) => span.innerText,
                   spanModal
                 );
-                // await spanModal.click();
-                await modal.evaluate((el) => el.click(), spanModal);
-                // break;
+                if (
+                  spanModalText === "View more answers" ||
+                  spanModalText === "View more comments" ||
+                  checkStringViewAll(spanModalText) ||
+                  spanModalText === "View 1 reply"
+                ) {
+                  if (modal && spanModal) {
+                    await spanModal.click();
+                    break;
+                  }
+                }
               }
+              await delay(1000);
+              await clickSeeMore(modal);
+              innerText = removeUnnecessaryStrPath(
+                await page.evaluate((element) => element.innerText, modal)
+              );
+              await writeToFile(`[Post Index]: ${postIndex}`);
+              await writeToFile(
+                `----------------- Start Post --------------- \n`
+              );
+              await getImgUrl(modal, postIndex);
+              console.log("[innerText]:", innerText);
+              await writeToFile(`[Post content]: ${innerText} \n`);
+              await writeToFile(
+                `----------------- End Post --------------- \n`
+              );
+              await closeModal();
+              postIndex++;
+              // await page.evaluate((el) => el.remove(), parentEl);
             }
           }
-          await delay(3000);
-          await clickSeeMore(modal);
-          innerText = removeUnnecessaryStrPath(
-            await page.evaluate((element) => element.innerText, modal)
-          );
-          if (innerText === "") {
-            console.log("inner text null modal");
-          }
-          await writeToFile(
-            `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
-          );
-
-          await getImgUrl(modal, postIndex);
-          // console.log("[innerText]:", innerText);
-          await closeModal();
-          postIndex++;
-          // await page.evaluate((el) => el.remove(), parentEl);
-          modal = null;
-          spansModal = null;
           continue outerLoop;
         }
       }
+
+      // await page.evaluate(() => {
+      //   const divs = Array.from(document.querySelectorAll("div"));
+      //   const seeMoreDivs = divs.filter((div) => div.innerText === "See more");
+      //   seeMoreDivs.forEach((div) => {
+      //     if (div) {
+      //       div.click();
+      //     }
+      //   });
+      // });
 
       await clickSeeMore(parentEl);
 
       innerText = removeUnnecessaryStrPath(
         await page.evaluate((element) => element.innerText, parentEl)
       );
-      if (innerText === "") {
-        console.log("inner text null no modal");
-      }
-
-      await writeToFile(
-        `[Post Index]: ${postIndex}\n----------------- Start Post --------------- \n[Post content]: ${innerText} \n----------------- End Post --------------- \n`
-      );
+      await writeToFile(`[Post Index]: ${postIndex}`);
+      await writeToFile(`----------------- Start Post --------------- \n`);
       await getImgUrl(parentEl, postIndex);
-      // console.log("[innerText]:", innerText);
-
+      console.log("[innerText]:", innerText);
+      await writeToFile(`[Post content]: ${innerText}`);
+      await writeToFile(`----------------- End Post --------------- \n`);
+      ``;
       postIndex++;
+      if (postIndex % 50 === 0) {
+        await delay(20000);
+      }
       // await page.evaluate((el) => el.remove(), parentEl);
     }
 
-    await Promise.all(
-      crawlElements.map((parentEl) => {
-        return page.evaluate((el) => el.remove(), parentEl);
-      })
-    );
-
-    await delay(5000);
+    // Re-query the elements to see if more work is needed
+    // await delay();
+    
+    crawlElements.map(async (parentEl) => {
+      await page.evaluate((el) => el.remove(), parentEl);
+    })
+    await delay();
     crawlElements = await page.$$(crawlElementsSelector);
-    crawlElementsLength += crawlElements.length;
-    console.log("[postindex]: ", postIndex);
+
+
+    // console.log("[crawlElements.length]:", crawlElements.length);
+    // if (crawlElements.length === 0) {
+    //   break;
+    // }
   }
   console.log("[EXIT LOOP]");
 };
@@ -315,8 +277,8 @@ async function autoScroll() {
 }
 
 const getImgUrl = async (parentEl, postIndex) => {
-  let postImages = await parentEl.$$(postImgSelector);
-  let replyImages = await parentEl.$$(replyImgSelector);
+  const postImages = await parentEl.$$(postImgSelector);
+  const replyImages = await parentEl.$$(replyImgSelector);
 
   const postImagesUrl = await Promise.all(
     postImages.map(async (img) => {
@@ -324,7 +286,6 @@ const getImgUrl = async (parentEl, postIndex) => {
       return src.jsonValue();
     })
   );
-  postImages = null;
 
   const replyImagesUrl = await Promise.all(
     replyImages.map(async (img) => {
@@ -336,7 +297,6 @@ const getImgUrl = async (parentEl, postIndex) => {
       return null; // Return null if it contains "emoji"
     })
   );
-  replyImages = null;
 
   const filteredReplyImagesUrl = replyImagesUrl.filter((url) => url !== null);
   const filteredPostImagesUrl = postImagesUrl.filter((url) => url !== null);
@@ -359,6 +319,15 @@ const getImgUrl = async (parentEl, postIndex) => {
       await downloadImageAsync(img, fullImgPath);
     }
   }
+
+  // for (let img of filteredReplyImagesUrl) {
+  //   if (img) {
+  //     await writeToFile(`[Reply images]: ${img}`);
+  //   }
+  // }
+
+  // await writeToFile(`[Post images]: ${postImagesUrl}`);
+  // await writeToFile(`[Reply images]: ${replyImagesUrl}`);
 
   return;
 };
@@ -406,46 +375,6 @@ const removeUnnecessaryStrPath = (original) => {
   // Replace three or more consecutive newline sequences with just two
   text = text.replace(/\n{3,}/g, "\n\n");
   return text;
-};
-
-const clickViewComment = async (parentEl) => {
-  const viewCommentEls = await parentEl.$$(spanClickSelector);
-  for (const div of viewCommentEls) {
-    const isMoreComment = await parentEl.evaluate((el) => {
-      // Function to check if the text matches "View all [number] replies"
-      function checkStringViewAll(str) {
-        const regex = /^View all \d+ replies$/;
-        return regex.test(str);
-      }
-
-      // Evaluate the text content of the element against multiple conditions
-      return (
-        // el.textContent === "View more answers" ||
-        // el.textContent === "View more comments" ||
-        checkStringViewAll(el.textContent) || // Use the checkStringViewAll function
-        el.textContent == "View 1 reply"
-      );
-    }, div);
-    if (isMoreComment) {
-      // Scroll the div into view
-
-      // await delay(500);
-
-      try {
-        const elementContainsLink = await div.evaluate((element) => {
-          const link = element.querySelector("a[href]");
-          return !!link;
-        });
-        if (!elementContainsLink) {
-          await div.evaluate((el) => el.scrollIntoView(), div);
-          await div.click();
-          // await delay(1000);
-          // break;
-        }
-      } catch (error) {}
-    }
-  }
-  await delay(1000);
 };
 
 const downloadImage = (url, path) =>
@@ -508,8 +437,8 @@ const createFolder = (postIndex) => {
 };
 
 const clickSeeMore = async (parentEl) => {
-  let seeMoreDivs = await parentEl.$$(seeMoreSelector);
-  for await (const div of seeMoreDivs) {
+  const seeMoreDivs = await page.$$(seeMoreSelector);
+  for (const div of seeMoreDivs) {
     const isSeeMore = await parentEl.evaluate(
       // (el) => el.textContent.trim() === "See more",
       (el) => el.textContent === "See more",
@@ -519,24 +448,17 @@ const clickSeeMore = async (parentEl) => {
       // Scroll the div into view
       await parentEl.evaluate((el) => el.scrollIntoView(), div);
       // await delay(500);
-      const elementContainsLink = await div.evaluate((element) => {
-        const link = element.querySelector("a[href]");
-        return !!link;
-      });
-      if (!elementContainsLink) {
-        try {
-          // await div.click();
-          await parentEl.evaluate((el) => el.click(), div);
-          // await parentEl.evaluate((el) => el.click(), div);
-        } catch (error) {
-          await parentEl.evaluate((el) => el.click(), div);
-        }
+
+      try {
+        await div.click();
+      } catch (error) {
+        await parentEl.evaluate((el) => el.click(), div);
       }
     }
   }
-  seeMoreDivs = null;
   await delay(1000);
 };
+
 function checkStringViewAll(str) {
   const regex = /^View all \d+ replies$/;
   return regex.test(str);
