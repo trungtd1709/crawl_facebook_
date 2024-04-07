@@ -149,6 +149,7 @@ const findAndRemoveElement = async () => {
             if (!elementContainsLink) {
               await span.click();
               await delay(1000);
+              break;
             }
           }
         }
