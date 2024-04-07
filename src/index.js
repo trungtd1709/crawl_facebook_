@@ -50,13 +50,13 @@ const startPage = async () => {
     await page.setViewport({ width: 1080, height: 1024 });
     await createFolder();
     await cleanFile();
-    // await closeModal();
+    await closeModal();
     // await login();
 
     // await autoScroll();
     // await page.waitForNavigation();
     // let crawlElements = await page.$("123");
-    await delay();
+    // await delay();
     // await login();
     await delay(30000);
     await findAndRemoveElement();
