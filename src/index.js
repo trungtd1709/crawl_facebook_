@@ -26,15 +26,15 @@ const imagesFolderPath = "./images";
 const app = express();
 const port = process.env.PORT || 3002;
 
-let redisClient;
+// let redisClient;
 
-(async () => {
-  redisClient = redis.createClient();
+// (async () => {
+//   redisClient = redis.createClient();
 
-  redisClient.on("error", (error) => console.error("Error: ", error));
+//   redisClient.on("error", (error) => console.error("Error: ", error));
 
-  await redisClient.connect();
-})();
+//   await redisClient.connect();
+// })();
 
 // const browser = await puppeteer.launch({
 //   headless: false,
@@ -597,6 +597,7 @@ const viewReply = async (parentEl) => {
         
         return el.textContent === "View more answers" ||
         el.textContent === "View more comments" ||
+        el.textContent === "View previous replies" ||
         checkStringViewAllComment(el.textContent) ||
         el.textContent === "View 1 reply";
       },
