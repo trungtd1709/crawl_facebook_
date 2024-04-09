@@ -174,7 +174,7 @@ const findAndRemoveElement = async () => {
   let crawlElementsLength = 1;
   let postIndex = 1;
 
-  const errPostIndex = 0;
+  const errPostIndex = 1500;
 
   while (true) {
     // const context = browser.defaultBrowserContext();
@@ -356,6 +356,7 @@ async function autoScroll() {
       }, totalScrollTime);
     });
   });
+  await delay(2000);
 }
 
 const getImgUrl = async (parentEl, postIndex) => {
