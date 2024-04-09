@@ -217,7 +217,7 @@ const findAndRemoveElement = async () => {
         let modalFound = true;
 
         await page
-          .waitForSelector(modalSelector, { timeout: 5000 })
+          .waitForSelector(modalSelector, { timeout: 2500 })
           .catch((e) => {
             console.log("Modal not found or did not appear within 5 seconds");
             modalFound = false;
