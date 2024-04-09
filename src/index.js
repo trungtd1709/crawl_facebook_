@@ -229,26 +229,27 @@ const findAndRemoveElement = async () => {
               return el[0].tagName.toLowerCase() === "span";
             });
 
-            for (let i = 0; i < spansModal.length; i++) {
-              const spanModal = spansModal[i];
-              const spanModalText = await page.evaluate(
-                (span) => span.innerText,
-                spanModal
-              );
-              if (
-                spanModalText === "View more answers" ||
-                spanModalText === "View more comments" ||
-                checkStringViewAll(spanModalText) ||
-                spanModalText === "View 1 reply"
-              ) {
-                if (modal && spanModal) {
-                  await page.evaluate((el) => el.scrollIntoView(), spanModal);
-                  // await spanModal.click();
-                  await page.evaluate((el) => el.click(), spanModal);
-                  // break;
-                }
-              }
-            }
+            // for (let i = 0; i < spansModal.length; i++) {
+            //   const spanModal = spansModal[i];
+            //   const spanModalText = await page.evaluate(
+            //     (span) => span.innerText,
+            //     spanModal
+            //   );
+            //   if (
+            //     spanModalText === "View more answers" ||
+            //     spanModalText === "View more comments" ||
+            //     checkStringViewAll(spanModalText) ||
+            //     spanModalText === "View 1 reply"
+            //   ) {
+            //     if (modal && spanModal) {
+            //       await page.evaluate((el) => el.scrollIntoView(), spanModal);
+            //       // await spanModal.click();
+            //       await page.evaluate((el) => el.click(), spanModal);
+            //       // break;
+            //     }
+            //   }
+            // }
+            await viewReply(modal);
             await delay(3000);
             await clickSeeMore(modal);
             innerText = removeUnnecessaryStrPath(
@@ -558,6 +559,47 @@ const clickSeeMore = async (parentEl) => {
     const isSeeMore = await div.evaluate(
       // (el) => el.textContent.trim() === "See more",
       (el) => el.textContent === "See more",
+      div
+    );
+    if (isSeeMore) {
+      // Scroll the div into view
+      await div.evaluate((el) => el.scrollIntoView(), div);
+      // await delay(500);
+      const elementContainsLink = await div.evaluate((element) => {
+        const link = element.querySelector("a[href]");
+        return !!link;
+      });
+      if (!elementContainsLink) {
+        try {
+          // await div.click();
+          await div.evaluate((el) => el.click(), div);
+          // await parentEl.evaluate((el) => el.click(), div);
+        } catch (error) {
+          await parentEl.evaluate((el) => el.click(), div);
+        }
+      }
+    }
+  }
+  // seeMoreDivs = null;
+  await delay(1000);
+};
+
+const viewReply = async (parentEl) => {
+  let seeMoreDivs = await parentEl.$$(spanClickSelector);
+  for await (const div of seeMoreDivs) {
+    const isSeeMore = await div.evaluate(
+      // (el) => el.textContent.trim() === "See more",
+      (el) => {
+        function checkStringViewAllComment(str) {
+          const regex = /^View all \d+ replies$/;
+          return regex.test(str);
+        }
+        
+        return el.textContent === "View more answers" ||
+        el.textContent === "View more comments" ||
+        checkStringViewAllComment(el.textContent) ||
+        el.textContent === "View 1 reply";
+      },
       div
     );
     if (isSeeMore) {
