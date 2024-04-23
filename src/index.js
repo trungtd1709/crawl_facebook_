@@ -24,7 +24,7 @@ dotenv.config();
 const filename = "result.txt";
 const imagesFolderPath = "./images";
 const app = express();
-const port = process.env.PORT || 3002;
+const port = process.env.PORT || 3000;
 
 // let redisClient;
 
@@ -83,7 +83,7 @@ const startPage = async () => {
     // let crawlElements = await page.$("123");
     // await delay();
     // await login();
-    await delay(40000);
+    await delay(50000);
     await findAndRemoveElement();
   } catch (err) {
     console.log(err);
@@ -98,8 +98,15 @@ const closeModal = async () => {
 
   const closeButton = await page.$('[aria-label="Close"]');
   if (closeButton) {
-    closeButton.click();
-    await delay(1000);
+    try {
+      // await loginButton.click();
+      await page.evaluate((el) => el.click(), closeButton);
+      await delay(1000);
+      console.log("click success");
+    } catch (err) {
+      console.log(err);
+    }
+    // closeButton.click();
   }
 };
 
@@ -174,12 +181,13 @@ const findAndRemoveElement = async () => {
   let crawlElementsLength = 1;
   let postIndex = 1;
 
-  const errPostIndex = 1500;
+  const errPostIndex = 1000;
 
   while (true) {
     // const context = browser.defaultBrowserContext();
     // await context.clearPermissionOverrides();
     // await context.clearCache();
+    console.log("[postIndex]:", postIndex);
     if (postIndex >= errPostIndex) {
       outerLoop: for await (let parentEl of crawlElements) {
         await parentEl.evaluate((el) => el.scrollIntoView(), parentEl);
@@ -343,7 +351,7 @@ async function autoScroll() {
   console.log("[AutoScroll]");
   await page.evaluate(async () => {
     await new Promise((resolve) => {
-      const totalScrollTime = 500;
+      const totalScrollTime = 1000;
 
       const scrollInterval = 100;
       var distance = 200;
@@ -357,7 +365,7 @@ async function autoScroll() {
       }, totalScrollTime);
     });
   });
-  await delay(2000);
+  await delay(1500);
 }
 
 const getImgUrl = async (parentEl, postIndex) => {
@@ -594,12 +602,14 @@ const viewReply = async (parentEl) => {
           const regex = /^View all \d+ replies$/;
           return regex.test(str);
         }
-        
-        return el.textContent === "View more answers" ||
-        el.textContent === "View more comments" ||
-        el.textContent === "View previous replies" ||
-        checkStringViewAllComment(el.textContent) ||
-        el.textContent === "View 1 reply";
+
+        return (
+          el.textContent === "View more answers" ||
+          el.textContent === "View more comments" ||
+          el.textContent === "View previous replies" ||
+          checkStringViewAllComment(el.textContent) ||
+          el.textContent === "View 1 reply"
+        );
       },
       div
     );
